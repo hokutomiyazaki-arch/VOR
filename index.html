@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>カメラオーバーレイアプリ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800enstpx;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            background: #000;
+        }
+        
+        #video {
+            width: 100%;
+            height: auto;
+            display: block;
+            transform: scaleX(-1);
+        }
+        
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.5;
+            transform: scaleX(-1);
+            display: none;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        label {
+            font-weight: 600;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        input[type="text"] {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e0e0e0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        .status.error {
+            background: #fee;
+            color: #c00;
+        }
+        
+        .status.success {
+            background: #efe;
+            color: #060;
+        }
+        
+        .slider-value {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📷 カメラオーバーレイアプリ</h1>
+        
+        <div class="video-container">
+            <video id="video" autoplay playsinline></video>
+            <img id="overlay" alt="オーバーレイ画像">
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="imageUrl">画像URL（GitHub Raw URL推奨）</label>
+                <input type="text" id="imageUrl" placeholder="https://raw.githubusercontent.com/username/repo/main/image.png">
+                <div class="help-text">GitHubの画像の場合は、Raw URLを使用してください</div>
+            </div>
+            
+            <div class="control-group">
+                <label for="opacity">透明度</label>
+                <input type="range" id="opacity" min="0" max="100" value="50">
+                <div class="slider-value">50%</div>
+            </div>
+            
+            <div class="button-group">
+                <button id="startBtn">カメラ開始</button>
+                <button id="stopBtn" disabled>カメラ停止</button>
+            </div>
+            
+            <button id="loadImageBtn">画像を読み込む</button>
+            
+            <div id="status" class="status" style="display: none;"></div>
+        </div>
+    </div>
+    
+    <script>
+        let stream = null;
+        const video = document.getElementById('video');
+        const overlay = document.getElementById('overlay');
+        const imageUrlInput = document.getElementById('imageUrl');
+        const opacitySlider = document.getElementById('opacity');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const loadImageBtn = document.getElementById('loadImageBtn');
+        const status = document.getElementById('status');
+        const sliderValue = document.querySelector('.slider-value');
+        
+        // 透明度スライダーのイベント
+        opacitySlider.addEventListener('input', (e) => {
+            const value = e.target.value;
+            overlay.style.opacity = value / 100;
+            sliderValue.textContent = `${value}%`;
+        });
+        
+        // カメラ開始
+        startBtn.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'user',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+                video.srcObject = stream;
+                
+                startBtn.disabled = true;
+                stopBtn.disabled = false;
+                
+                showStatus('カメラを開始しました', 'success');
+            } catch (err) {
+                console.error('カメラの起動に失敗しました:', err);
+                showStatus('カメラの起動に失敗しました。カメラへのアクセスを許可してください。', 'error');
+            }
+        });
+        
+        // カメラ停止
+        stopBtn.addEventListener('click', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                video.srcObject = null;
+                stream = null;
+                
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                
+                showStatus('カメラを停止しました', 'success');
+            }
+        });
+        
+        // 画像読み込み
+        loadImageBtn.addEventListener('click', () => {
+            const url = imageUrlInput.value.trim();
+            
+            if (!url) {
+                showStatus('画像URLを入力してください', 'error');
+                return;
+            }
+            
+            // GitHubのURLを変換
+            let finalUrl = url;
+            if (url.includes('github.com') && !url.includes('raw.githubusercontent.com')) {
+                // github.comのURLをraw.githubusercontent.comに変換
+                finalUrl = url
+                    .replace('github.com', 'raw.githubusercontent.com')
+                    .replace('/blob/', '/');
+            }
+            
+            // 画像を読み込む
+            overlay.src = finalUrl;
+            overlay.style.display = 'block';
+            
+            overlay.onload = () => {
+                showStatus('画像を読み込みました', 'success');
+            };
+            
+            overlay.onerror = () => {
+                showStatus('画像の読み込みに失敗しました。URLを確認してください。', 'error');
+                overlay.style.display = 'none';
+            };
+        });
+        
+        // ステータス表示
+        function showStatus(message, type) {
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+            
+            setTimeout(() => {
+                status.style.display = 'none';
+            }, 3000);
+        }
+        
+        // ページ離脱時にカメラを停止
+        window.addEventListener('beforeunload', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+    </script>
+</body>
+</html>
