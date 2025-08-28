@@ -99,7 +99,7 @@
             background: rgba(255, 255, 255, 0.2);
             border: 2px solid #fff;
             color: #fff;
-            padding: 10ойта 15px;
+            padding: 10px 15px;
             border-radius: 25px;
             font-size: 16px;
             cursor: pointer;
@@ -180,6 +180,56 @@
             box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
         }
 
+        #controls {
+            position: absolute;
+            bottom: 50px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 15px;
+            padding: 15px;
+            z-index: 999;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-group {
+            margin: 10px 0;
+        }
+
+        .control-label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 5px;
+            color: #ccc;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #333;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4CAF50;
+            cursor: pointer;
+        }
+
         #copyright {
             position: absolute;
             bottom: 10px;
@@ -188,7 +238,7 @@
             text-align: center;
             font-size: 11px;
             color: rgba(255, 255, 255, 0.6);
-            z-index: 999;
+            z-index: 998;
             background: rgba(0, 0, 0, 0.5);
             padding: 5px;
         }
@@ -208,6 +258,12 @@
                 font-size: 13px;
                 padding: 10px;
             }
+
+            #controls {
+                bottom: 40px;
+                left: 10px;
+                right: 10px;
+            }
         }
     </style>
 </head>
@@ -225,14 +281,14 @@
         
         <div id="menu">
             <h3>半規管を選択</h3>
-            <button class="canal-button" data-canal="right-horizontal" data-image="https://hokutomiyazaki-arch.github.io/VOR/8.png">右水平半規管</button>
-            <button class="canal-button" data-canal="left-horizontal" data-image="https://hokutomiyazaki-arch.github.io/VOR/7.png">左水平半規管</button>
-            <button class="canal-button" data-canal="right-anterior" data-image="https://hokutomiyazaki-arch.github.io/VOR/3.png">右前半規管</button>
-            <button class="canal-button" data-canal="left-anterior" data-image="https://hokutomiyazaki-arch.github.io/VOR/1.png">左前半規管</button>
-            <button class="canal-button" data-canal="right-posterior" data-image="https://hokutomiyazaki-arch.github.io/VOR/6.png">右後半規管</button>
-            <button class="canal-button" data-canal="left-posterior" data-image="https://hokutomiyazaki-arch.github.io/VOR/5.png">左後半規管</button>
-            <button class="canal-button" data-canal="both-anterior" data-image="https://hokutomiyazaki-arch.github.io/VOR/2.png">両前半規管</button>
-            <button class="canal-button" data-canal="both-posterior" data-image="https://hokutomiyazaki-arch.github.io/VOR/4.png">両後半規管</button>
+            <button class="canal-button" data-canal="right-horizontal" data-image="https://hokutomiyazaki-arch.github.io/VOR/8.png" data-arrow="right">右水平半規管</button>
+            <button class="canal-button" data-canal="left-horizontal" data-image="https://hokutomiyazaki-arch.github.io/VOR/7.png" data-arrow="left">左水平半規管</button>
+            <button class="canal-button" data-canal="right-anterior" data-image="https://hokutomiyazaki-arch.github.io/VOR/3.png" data-arrow="bottom-left">右前半規管</button>
+            <button class="canal-button" data-canal="left-anterior" data-image="https://hokutomiyazaki-arch.github.io/VOR/1.png" data-arrow="bottom-right">左前半規管</button>
+            <button class="canal-button" data-canal="right-posterior" data-image="https://hokutomiyazaki-arch.github.io/VOR/6.png" data-arrow="top-right">右後半規管</button>
+            <button class="canal-button" data-canal="left-posterior" data-image="https://hokutomiyazaki-arch.github.io/VOR/5.png" data-arrow="top-left">左後半規管</button>
+            <button class="canal-button" data-canal="both-anterior" data-image="https://hokutomiyazaki-arch.github.io/VOR/2.png" data-arrow="bottom">両前半規管</button>
+            <button class="canal-button" data-canal="both-posterior" data-image="https://hokutomiyazaki-arch.github.io/VOR/4.png" data-arrow="top">両後半規管</button>
             <button class="canal-button" id="fullscreenBtn">全画面表示</button>
         </div>
         
@@ -240,6 +296,17 @@
             <video id="camera" autoplay playsinline></video>
             <canvas id="overlay"></canvas>
             <img id="guideImage" style="display: none;">
+        </div>
+
+        <div id="controls">
+            <div class="control-group">
+                <label class="control-label">ガイドライン濃度: <span id="lineValue">30</span>%</label>
+                <input type="range" class="slider" id="lineOpacity" min="0" max="100" value="30">
+            </div>
+            <div class="control-group">
+                <label class="control-label">頭位画像濃度: <span id="imageValue">30</span>%</label>
+                <input type="range" class="slider" id="imageOpacity" min="0" max="100" value="30">
+            </div>
         </div>
         
         <div id="copyright">
@@ -249,8 +316,11 @@
 
     <script>
         let currentCanal = null;
+        let currentArrowDirection = null;
         let menuOpen = false;
         let stream = null;
+        let lineOpacityValue = 0.3;
+        let animationId = null;
 
         // カメラの初期化
         async function initCamera() {
@@ -277,6 +347,29 @@
             }
         }
 
+        // 矢印を描画する関数
+        function drawArrow(ctx, startX, startY, endX, endY, color = '#ff0000') {
+            const headLength = 20;
+            const angle = Math.atan2(endY - startY, endX - startX);
+            
+            // 矢印の線
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+            
+            // 矢印の頭
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(endX, endY);
+            ctx.lineTo(endX - headLength * Math.cos(angle - Math.PI / 6), endY - headLength * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(endX - headLength * Math.cos(angle + Math.PI / 6), endY - headLength * Math.sin(angle + Math.PI / 6));
+            ctx.closePath();
+            ctx.fill();
+        }
+
         // オーバーレイの設定と描画
         function setupOverlay() {
             const canvas = document.getElementById('overlay');
@@ -300,9 +393,10 @@
                 
                 const centerX = canvas.width / 2;
                 const centerY = canvas.height / 2;
+                const margin = 50;
                 
                 // ガイドライン（細い線）
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.strokeStyle = `rgba(255, 255, 255, ${lineOpacityValue})`;
                 ctx.lineWidth = 1;
                 
                 // 水平線
@@ -329,6 +423,43 @@
                 ctx.lineTo(0, canvas.height);
                 ctx.stroke();
                 
+                // 選択された半規管に応じて矢印を描画
+                if (currentArrowDirection) {
+                    const arrowColor = '#00ff00';
+                    const arrowOffset = 80;
+                    
+                    switch(currentArrowDirection) {
+                        case 'right':
+                            drawArrow(ctx, centerX + arrowOffset, centerY, canvas.width - margin, centerY, arrowColor);
+                            break;
+                        case 'left':
+                            drawArrow(ctx, centerX - arrowOffset, centerY, margin, centerY, arrowColor);
+                            break;
+                        case 'top':
+                            drawArrow(ctx, centerX, centerY - arrowOffset, centerX, margin, arrowColor);
+                            break;
+                        case 'bottom':
+                            drawArrow(ctx, centerX, centerY + arrowOffset, centerX, canvas.height - margin, arrowColor);
+                            break;
+                        case 'top-right':
+                            drawArrow(ctx, centerX + arrowOffset/1.4, centerY - arrowOffset/1.4, 
+                                     canvas.width - margin, margin, arrowColor);
+                            break;
+                        case 'top-left':
+                            drawArrow(ctx, centerX - arrowOffset/1.4, centerY - arrowOffset/1.4, 
+                                     margin, margin, arrowColor);
+                            break;
+                        case 'bottom-right':
+                            drawArrow(ctx, centerX + arrowOffset/1.4, centerY + arrowOffset/1.4, 
+                                     canvas.width - margin, canvas.height - margin, arrowColor);
+                            break;
+                        case 'bottom-left':
+                            drawArrow(ctx, centerX - arrowOffset/1.4, centerY + arrowOffset/1.4, 
+                                     margin, canvas.height - margin, arrowColor);
+                            break;
+                    }
+                }
+                
                 // 中心のターゲット（黒い円と白い縁取り）
                 ctx.fillStyle = '#000';
                 ctx.strokeStyle = '#fff';
@@ -350,7 +481,7 @@
                 ctx.arc(centerX, centerY, 3, 0, Math.PI * 2);
                 ctx.fill();
                 
-                requestAnimationFrame(drawOverlay);
+                animationId = requestAnimationFrame(drawOverlay);
             }
             
             drawOverlay();
@@ -368,6 +499,7 @@
             button.addEventListener('click', (e) => {
                 const canal = e.target.dataset.canal;
                 const imagePath = e.target.dataset.image;
+                const arrowDirection = e.target.dataset.arrow;
                 
                 // アクティブなボタンのスタイルを更新
                 document.querySelectorAll('.canal-button').forEach(btn => {
@@ -381,7 +513,8 @@
                 guideImage.style.display = 'block';
                 
                 currentCanal = canal;
-                console.log(`選択された半規管: ${canal}`);
+                currentArrowDirection = arrowDirection;
+                console.log(`選択された半規管: ${canal}, 矢印方向: ${arrowDirection}`);
             });
         });
 
@@ -402,6 +535,20 @@
                     document.exitFullscreen();
                 }
             }
+        });
+
+        // スライダーのイベントリスナー
+        document.getElementById('lineOpacity').addEventListener('input', (e) => {
+            const value = e.target.value;
+            lineOpacityValue = value / 100;
+            document.getElementById('lineValue').textContent = value;
+        });
+
+        document.getElementById('imageOpacity').addEventListener('input', (e) => {
+            const value = e.target.value;
+            const guideImage = document.getElementById('guideImage');
+            guideImage.style.opacity = value / 100;
+            document.getElementById('imageValue').textContent = value;
         });
 
         // アドレスバーを隠すための処理
