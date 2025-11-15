@@ -6,13 +6,15 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>VOR Training - 前庭動眼反射トレーニング</title>
     
     <!-- PWA設定 -->
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="https://hokutomiyazaki-arch.github.io/VOR/FNT512.png">
-    <link rel="icon" type="image/png" href="https://hokutomiyazaki-arch.github.io/VOR/FNT512.png">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="FNT512.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="FNT512.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="FNT512.png">
     <meta name="theme-color" content="#4CAF50">
+    
+    <title>VOR Training - 前庭動眼反射トレーニング</title>
     <style>
         * {
             margin: 0;
@@ -145,6 +147,17 @@
             }
         }
 
+        @keyframes slideUp {
+            from { 
+                transform: translateY(100px); 
+                opacity: 0; 
+            }
+            to { 
+                transform: translateY(0); 
+                opacity: 1; 
+            }
+        }
+
         #menu h3 {
             margin-bottom: 15px;
             font-size: 18px;
@@ -254,6 +267,77 @@
             display: none !important;
         }
 
+        /* スプラッシュスクリーン */
+        #splashScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            opacity: 1;
+            transition: opacity 0.5s ease-out;
+        }
+
+        #splashScreen.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .splash-logo {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 20px;
+        }
+
+        .splash-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+
+        .splash-subtitle {
+            font-size: 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .splash-copyright {
+            position: absolute;
+            bottom: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        #installPrompt {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            z-index: 2000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: none;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        #installPrompt.show {
+            display: block !important;
+        }
+
         @media (max-width: 768px) {
             #menu {
                 right: 5px;
@@ -275,9 +359,17 @@
     </style>
 </head>
 <body>
+    <!-- スプラッシュスクリーン -->
+    <div id="splashScreen">
+        <img class="splash-logo" src="FNT512.png" alt="FNT Logo">
+        <div class="splash-title">Functional Neuro Training</div>
+        <div class="splash-subtitle">VOR Training</div>
+        <div class="splash-copyright">© Functional Neuro Training</div>
+    </div>
+
     <div id="app">
         <div id="header">
-            <img id="logo" src="https://hokutomiyazaki-arch.github.io/VOR/FNT_color2.png" alt="FNT Logo">
+            <img id="logo" src="FNT512-transparent.png" alt="FNT Logo">
             <div id="instructions">
                 カメラを見ながら、選択した半規管の方向に頭を動かしてVOR練習を行います。<br>
                 ガイド画像に合わせて正確な頭位で練習してください。
@@ -288,14 +380,14 @@
         
         <div id="menu">
             <h3>半規管を選択</h3>
-            <button class="canal-button" data-canal="right-horizontal" data-image="https://hokutomiyazaki-arch.github.io/VOR/8.png" data-arrow="right">右水平半規管</button>
-            <button class="canal-button" data-canal="left-horizontal" data-image="https://hokutomiyazaki-arch.github.io/VOR/7.png" data-arrow="left">左水平半規管</button>
-            <button class="canal-button" data-canal="right-anterior" data-image="https://hokutomiyazaki-arch.github.io/VOR/3.png" data-arrow="bottom-left">右前半規管</button>
-            <button class="canal-button" data-canal="left-anterior" data-image="https://hokutomiyazaki-arch.github.io/VOR/1.png" data-arrow="bottom-right">左前半規管</button>
-            <button class="canal-button" data-canal="right-posterior" data-image="https://hokutomiyazaki-arch.github.io/VOR/6.png" data-arrow="top-right">右後半規管</button>
-            <button class="canal-button" data-canal="left-posterior" data-image="https://hokutomiyazaki-arch.github.io/VOR/5.png" data-arrow="top-left">左後半規管</button>
-            <button class="canal-button" data-canal="both-anterior" data-image="https://hokutomiyazaki-arch.github.io/VOR/2.png" data-arrow="bottom">両前半規管</button>
-            <button class="canal-button" data-canal="both-posterior" data-image="https://hokutomiyazaki-arch.github.io/VOR/4.png" data-arrow="top">両後半規管</button>
+            <button class="canal-button" data-canal="right-horizontal" data-image="8.png" data-arrow="right">右水平半規管</button>
+            <button class="canal-button" data-canal="left-horizontal" data-image="7.png" data-arrow="left">左水平半規管</button>
+            <button class="canal-button" data-canal="right-anterior" data-image="3.png" data-arrow="bottom-left">右前半規管</button>
+            <button class="canal-button" data-canal="left-anterior" data-image="1.png" data-arrow="bottom-right">左前半規管</button>
+            <button class="canal-button" data-canal="right-posterior" data-image="6.png" data-arrow="top-right">右後半規管</button>
+            <button class="canal-button" data-canal="left-posterior" data-image="5.png" data-arrow="top-left">左後半規管</button>
+            <button class="canal-button" data-canal="both-anterior" data-image="2.png" data-arrow="bottom">両前半規管</button>
+            <button class="canal-button" data-canal="both-posterior" data-image="4.png" data-arrow="top">両後半規管</button>
             <button class="canal-button" id="fullscreenBtn">全画面表示</button>
         </div>
         
@@ -321,6 +413,20 @@
         </div>
     </div>
 
+    <!-- PWAインストール促進 -->
+    <div id="installPrompt">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+                <div style="font-weight: bold; font-size: 18px; margin-bottom: 5px;">📱 アプリとしてインストール</div>
+                <div style="font-size: 14px; opacity: 0.9;">ホーム画面に追加して、いつでもVORトレーニング！</div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button id="installBtn" style="background: white; color: #667eea; border: none; padding: 10px 20px; border-radius: 25px; font-weight: bold; cursor: pointer;">インストール</button>
+                <button id="dismissBtn" style="background: transparent; color: white; border: 2px solid white; padding: 10px 20px; border-radius: 25px; font-weight: bold; cursor: pointer;">後で</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let currentCanal = null;
         let currentArrowDirection = null;
@@ -328,6 +434,18 @@
         let stream = null;
         let lineOpacityValue = 0.3;
         let animationId = null;
+
+        // スプラッシュスクリーンの処理（確実に表示される）
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('スプラッシュスクリーン表示開始');
+            const splashScreen = document.getElementById('splashScreen');
+            
+            // 2秒後に自動的に非表示
+            setTimeout(() => {
+                console.log('スプラッシュスクリーン非表示');
+                splashScreen.classList.add('hide');
+            }, 2000);
+        });
 
         // カメラの初期化
         async function initCamera() {
@@ -355,7 +473,7 @@
         }
 
         // 矢印を描画する関数
-        function drawArrow(ctx, startX, startY, endX, endY, color = '#ff0000') {
+        function drawArrow(ctx, startX, startY, endX, endY, color = '#00ff00') {
             const headLength = 20;
             const angle = Math.atan2(endY - startY, endX - startX);
             
@@ -564,6 +682,85 @@
                 window.scrollTo(0, 1);
             }, 0);
         });
+
+        // Service Worker登録
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                console.log('Service Worker登録開始');
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful:', registration);
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+
+        // PWAインストール促進（修正版）
+        let deferredPrompt;
+        
+        // インストールプロンプトイベントをキャッチ
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('beforeinstallprompt イベント発生');
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // 3秒後にプロンプトを表示
+            setTimeout(() => {
+                const installPrompt = document.getElementById('installPrompt');
+                installPrompt.classList.add('show');
+                console.log('インストールプロンプト表示');
+            }, 3000);
+        });
+
+        // インストールボタンのクリックイベント
+        document.getElementById('installBtn').addEventListener('click', async () => {
+            console.log('インストールボタンクリック');
+            const installPrompt = document.getElementById('installPrompt');
+            
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log('User response to the install prompt:', outcome);
+                
+                if (outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                }
+                deferredPrompt = null;
+            }
+            installPrompt.classList.remove('show');
+        });
+
+        // 閉じるボタンのクリックイベント
+        document.getElementById('dismissBtn').addEventListener('click', () => {
+            console.log('閉じるボタンクリック');
+            const installPrompt = document.getElementById('installPrompt');
+            installPrompt.classList.remove('show');
+        });
+
+        // iOSの場合の処理
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        const isInStandaloneMode = ('standalone' in window.navigator) && (window.navigator.standalone);
+        
+        if (isIOS && !isInStandaloneMode) {
+            console.log('iOS検出 - インストールガイド表示予定');
+            setTimeout(() => {
+                const iosPrompt = document.createElement('div');
+                iosPrompt.style.cssText = 'position: fixed; bottom: 20px; left: 20px; right: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 15px; z-index: 2000; box-shadow: 0 10px 30px rgba(0,0,0,0.3);';
+                iosPrompt.innerHTML = `
+                    <div style="font-weight: bold; font-size: 18px; margin-bottom: 10px;">📱 ホーム画面に追加</div>
+                    <div style="font-size: 14px;">
+                        1. Safari下部の共有ボタン <span style="font-size: 20px;">⬆️</span> をタップ<br>
+                        2. 「ホーム画面に追加」を選択<br>
+                        3. 「追加」をタップ
+                    </div>
+                    <button onclick="this.parentElement.style.display='none'" style="margin-top: 15px; background: white; color: #667eea; border: none; padding: 10px 20px; border-radius: 25px; font-weight: bold;">OK</button>
+                `;
+                document.body.appendChild(iosPrompt);
+                console.log('iOSインストールガイド表示');
+            }, 5000);
+        }
 
         // アプリの初期化
         initCamera();
